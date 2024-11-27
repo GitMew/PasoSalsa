@@ -1,14 +1,8 @@
-from typing import List, Tuple
-from dataclasses import dataclass
+from typing import List, Optional
 from math import atan2, degrees
 
-from .general import Visualiser, Figura, Foot
-
-
-@dataclass
-class Panel:
-    rendered: str
-    count: int
+from ..abstraction.movement import Foot
+from .general import Visualiser, Figura, Panel
 
 
 class PositionOnlyAsciiVisualiser(Visualiser):
@@ -20,7 +14,7 @@ class PositionOnlyAsciiVisualiser(Visualiser):
     def _makeSimpleGrid(self, width: int, height: int) -> List[List[None]]:  # Indexable as [x][y], i.e. the nested lists are columns with the leftmost element the bottommost element.
         return [[None for _ in range(height)] for _ in range(width)]
 
-    def _gridToString(self, grid: List[List[str]]) -> str:
+    def _gridToString(self, grid: List[List[Optional[str]]]) -> str:
         s = ""
         for y in range(len(grid[0])):
             row_y = ""
@@ -29,7 +23,7 @@ class PositionOnlyAsciiVisualiser(Visualiser):
                 row_y += "|"
             row_y = row_y[:-1]
             row_y += "\n"
-            s = row_y + s
+            s = row_y + s  # Reverse-order concatenation
         return s
 
     def _footToString(self, foot: Foot) -> str:
@@ -47,24 +41,14 @@ class PositionOnlyAsciiVisualiser(Visualiser):
         angle = round(angle if angle >= 0 else angle + 360)
         return arrows[angle // 45]
 
-    def print(self, figure: Figura):
-        panels = self._renderPanels(figure)
-        rendered_width = len(panels[0].rendered.splitlines()[0])
-
-        lines = [panel.rendered.splitlines(keepends=False) for panel in panels]  # [panel1_line1, panel1_line2, ...]  [panel2_line1, ...]
-        for panellines, panel in zip(lines, panels):
-            panellines.append("-"*rendered_width)
-            panellines.append(" "*(rendered_width//2) + str(panel.count) + " "*(rendered_width//2))
-
-        for lines_to_concatenate in zip(*lines):
-            print("        ".join(lines_to_concatenate))
-
-    def _renderPanels(self, figure: Figura) -> List[Panel]:
+    def render(self, figure: Figura) -> List[Panel]:
         panels = []
 
-        width, height, starting_feet = self.normaliseGrid(figure)
+        gridspec, starting_feet = self._normaliseGrid(figure)
+        width, height = gridspec.width, gridspec.height
+
         previous_feet = starting_feet
-        for count, (feet, checkpoint) in enumerate(zip(self.simulate(figure, base=starting_feet), figure.checkpoints)):
+        for count, (feet, checkpoint) in enumerate(zip(self._simulate(figure, base=starting_feet), figure.checkpoints)):
             if checkpoint.hidden:
                 previous_feet = feet
                 continue
@@ -90,3 +74,16 @@ class PositionOnlyAsciiVisualiser(Visualiser):
             previous_feet = feet
 
         return panels
+
+    def concatenate(self, panels: List[Panel]) -> str:
+        rendered_width = len(panels[0].rendered.splitlines()[0])
+
+        lines = [panel.rendered.splitlines(keepends=False) for panel in panels]  # [panel1_line1, panel1_line2, ...]  [panel2_line1, ...]
+        for panellines, panel in zip(lines, panels):
+            panellines.append("-"*rendered_width)
+            panellines.append(" "*(rendered_width//2) + str(panel.count) + " "*(rendered_width//2))
+
+        result = ""
+        for lines_to_concatenate in zip(*lines):
+            result += "        ".join(lines_to_concatenate) + "\n"
+        return result

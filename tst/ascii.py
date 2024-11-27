@@ -1,8 +1,10 @@
-from pasosalsa.instances.figuras import Guapea, DiLeQueNo
+from pasosalsa.instances.figuras import *
 from pasosalsa.visualisers.ascii import PositionOnlyAsciiVisualiser
 
 
 p = PositionOnlyAsciiVisualiser()
-p.print(Guapea)
+print(p.visualise(Guapea))
 print()
-p.print(DiLeQueNo)
+print(p.visualise(Crusado))
+print()
+print(p.visualise(DiLeQueNo))
