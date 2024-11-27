@@ -28,6 +28,9 @@ class FootPosition:
     y: int
     rotation: int
 
+    def isSamePlace(self, other: "FootPosition") -> bool:
+        return self.x == other.x and self.y == other.y
+
 
 class _Step:
     @abstractmethod
