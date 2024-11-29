@@ -41,7 +41,7 @@ class PositionOnlyAsciiVisualiser(Visualiser):
         angle = round(angle if angle >= 0 else angle + 360)
         return arrows[angle // 45]
 
-    def render(self, figure: Figura) -> List[Panel]:
+    def _render(self, figure: Figura) -> List[Panel]:
         panels = []
 
         gridspec, starting_feet = self._normaliseGrid(figure)
@@ -75,7 +75,7 @@ class PositionOnlyAsciiVisualiser(Visualiser):
 
         return panels
 
-    def concatenate(self, panels: List[Panel]) -> str:
+    def _concatenate(self, panels: List[Panel]) -> str:
         rendered_width = len(panels[0].rendered.splitlines()[0])
 
         lines = [panel.rendered.splitlines(keepends=False) for panel in panels]  # [panel1_line1, panel1_line2, ...]  [panel2_line1, ...]

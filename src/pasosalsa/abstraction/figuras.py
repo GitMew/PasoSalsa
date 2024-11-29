@@ -16,11 +16,15 @@ class Checkpoint:
         return Checkpoint([], hidden)
 
 
-@dataclass
-class Figura:
-    name: str
-    base: FeetState
-    checkpoints: List[Checkpoint]
+class Figura:  # Not a dataclass because of inheritance.
+    def __init__(self, name: str, base: FeetState, checkpoints: List[Checkpoint]):
+        self.name = name
+        self.base = base
+        self.checkpoints = checkpoints
+
+    @property
+    def counts(self) -> int:
+        return len(self.checkpoints) - 1
 
 
 class BuildFigura:

@@ -24,15 +24,15 @@ class Visualiser(ABC):
         self._panels_per_row = panels_per_row
 
     @abstractmethod
-    def render(self, figure: Figura) -> List[Panel]:
+    def _render(self, figure: Figura) -> List[Panel]:
         pass
 
     @abstractmethod
-    def concatenate(self, panels: List[Panel]) -> str:
+    def _concatenate(self, panels: List[Panel]) -> str:
         pass
 
     def visualise(self, figure: Figura):
-        return self.concatenate(self.render(figure))
+        return self._concatenate(self._render(figure))
 
     def _simulate(self, figure: Figura, base: FeetState=None) -> Iterable[FeetState]:
         positions = deepcopy(base or figure.base)

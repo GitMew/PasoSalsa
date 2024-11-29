@@ -10,7 +10,7 @@ class TikzVisualiser(Visualiser):
     Prints the positions of the steps as TikZ code.
     """
 
-    def render(self, figure: Figura) -> List[Panel]:
+    def _render(self, figure: Figura) -> List[Panel]:
         gridspec, starting_feet = self._normaliseGrid(figure)
         width, height = gridspec.width, gridspec.height
         panels = []
@@ -54,7 +54,7 @@ class TikzVisualiser(Visualiser):
 
         return panels
 
-    def concatenate(self, panels: List[Panel]) -> str:
+    def _concatenate(self, panels: List[Panel]) -> str:
         n = self._panels_per_row
         result = r"\begin{longtable}{" + "c"*n + "}\n"
 
@@ -96,7 +96,7 @@ class TikzVisualiser(Visualiser):
     column sep=1.5em,
     row sep=1.5em,
 ]
-\tikzstyle{salsa-gridline}=[black!20]
+\tikzstyle{salsa-gridline}=[black!30]
 \tikzstyle{salsa-encircle}=[draw, circle, inner sep=1pt]
 \tikzstyle{salsa-arrow}=[-latex, black]
 
