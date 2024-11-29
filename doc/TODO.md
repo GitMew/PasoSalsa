@@ -1,5 +1,6 @@
 # TODO
-- Package needs a better layout asap
+- Transformations for easier reuse:
+  - "Leader/follower like this figure" (e.g. the women's steps in sacala, after she has rotated)
 - Follower steps:
   - Add them to all figures. (This is not trivial because I don't even know them.)
   - Have an easy way of defining the follower's starting position
@@ -13,4 +14,3 @@
   - Imagine a grid `| L |  | R |`. Now it turns into `| R |  | L |`. How can we know the bend of the arrows that follow?
     Extra difficulty: if the person rotates 180°, their legs become untangled and they can do any move again.
 - Coarse-grained view (i.e. just leader-follower, not the feet)
-- Sequencer

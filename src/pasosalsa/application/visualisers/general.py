@@ -3,7 +3,7 @@ from copy import deepcopy
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from ..abstraction.figuras import Figura, FeetState
+from ...domain.abstracts.figuras import Figura, FeetState
 
 
 @dataclass

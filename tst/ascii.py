@@ -1,5 +1,5 @@
-from pasosalsa.instances.figuras import *
-from pasosalsa.visualisers.ascii import PositionOnlyAsciiVisualiser
+from pasosalsa.domain.instances.figuras import *
+from pasosalsa.application.visualisers.ascii import PositionOnlyAsciiVisualiser
 
 
 p = PositionOnlyAsciiVisualiser()

@@ -1,7 +1,7 @@
 from typing import List, Optional
 from math import atan2, degrees
 
-from ..abstraction.movement import Foot
+from ...domain.abstracts.movement import Foot
 from .general import Visualiser, Figura, Panel
 
 

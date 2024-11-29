@@ -1,12 +1,12 @@
 from typing import List, TypeVar
 import numpy.random as npr
 
-from ..abstraction.figuras import Figura
-from ..abstraction.sequence import Sequence, areCompatible
+from ...domain.abstracts.figuras import Figura
+from ...domain.abstracts.sequence import Sequence, areCompatible
 
 T = TypeVar("T")
 
-class Sequencer:
+class SequenceSampler:
 
     def __init__(self):
         self.rng = npr.default_rng(0)

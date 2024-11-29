@@ -1,4 +1,4 @@
-from pasosalsa.abstraction.movement import *
+from ..abstracts.movement import *
 
 
 InPlace   = Move(0,0)

@@ -1,5 +1,5 @@
-from ..abstraction.figuras import *
-from ..abstraction.sequence import Sequence
+from ..abstracts.figuras import *
+from ..abstracts.sequence import Sequence
 from .movement import *
 
 

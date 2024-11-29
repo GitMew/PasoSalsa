@@ -1,5 +1,5 @@
-from pasosalsa.instances.figuras import *
-from pasosalsa.abstraction.sequence import areCompatible
+from pasosalsa.domain.instances.figuras import *
+from pasosalsa.domain.abstracts.sequence import areCompatible
 
 print(areCompatible(Guapea, Enchufla))
 print(areCompatible(Enchufla, Guapea))  # <-- Should be False if you take follower into account, else it's True.

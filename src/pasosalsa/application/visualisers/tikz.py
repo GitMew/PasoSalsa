@@ -1,8 +1,8 @@
-from typing import List, Optional
+from typing import List
 
 from .general import Visualiser, Figura, Panel, GridSpec
-from ..abstraction.movement import Foot, FootPosition
-from ..instances.movement import InPlace
+from ...domain.abstracts.movement import Foot, FootPosition
+from ...domain.instances.movement import InPlace
 
 
 class TikzVisualiser(Visualiser):
