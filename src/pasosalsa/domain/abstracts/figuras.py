@@ -1,56 +1,78 @@
-from typing import Dict, List, Tuple
-from dataclasses import dataclass
+from typing import Tuple, Iterable
 
-from .movement import *
-from .movement import _Step
-
-FeetState = Dict[Foot, FootPosition]
+from .patterns import Posicion, Pattern, Count
 
 
-@dataclass
-class Checkpoint:
-    steps_since_previous: List[Tuple[Foot,_Step]]
-    hidden: bool
+class Figura:
 
-    def copyState(self, hidden: bool=False) -> "Checkpoint":
-        return Checkpoint([], hidden)
+    def __init__(self, name: str, posicion_at_start: Posicion, leader: Pattern, follower: Pattern):
+        assert leader.duration() == follower.duration()
 
-
-class Figura:  # Not a dataclass because of inheritance.
-    def __init__(self, name: str, base: FeetState, checkpoints: List[Checkpoint]):
         self.name = name
-        self.base = base
-        self.checkpoints = checkpoints
+        self.starting_posicion = posicion_at_start
 
-    @property
-    def counts(self) -> int:
-        return len(self.checkpoints) - 1
+        self.leader = leader
+        self.follower = follower
+
+        # Automatically impute the names of patterns if they are anonymous.
+        if not self.leader.name:
+            self.leader.setName(name + " (L)")
+        if not self.follower.name:
+            self.follower.setName(name + " (F)")
+
+    def duration(self):
+        return self.leader.duration()
 
 
 class BuildFigura:
 
-    def __init__(self, name: str, base: FeetState):
-        self._figure = Figura(name=name, base=base, checkpoints=[Checkpoint([], hidden=True)])
-        self.count()
+    def __init__(self, name: str):
+        self._name = name
 
-    def move(self, foot: Foot, movement: _Step) -> "BuildFigura":
-        self._lastCheckpoint().steps_since_previous.append((foot,movement))
-        return self
+    def startsIn(self, posicion: Posicion) -> "_FiguraBuilderWithStart":
+        return _FiguraBuilderWithStart(name=self._name, posicion=posicion)
 
-    def count(self) -> "BuildFigura":
-        self._addCheckpoint(self._lastCheckpoint().copyState())
-        return self
 
-    def pause(self) -> "BuildFigura":
-        self._lastCheckpoint().hidden = True
-        return self.count()
+class _FiguraBuilderWithStart:
 
-    def finish(self) -> "Figura":
-        self._figure.checkpoints.pop()
-        return self._figure
+    def __init__(self, name: str, posicion: Posicion):
+        self._name = name
+        self._posicion = posicion
 
-    def _addCheckpoint(self, checkpoint: Checkpoint):
-        return self._figure.checkpoints.append(checkpoint)
+    def withLeader(self, pattern: Pattern) -> "_FiguraBuilderWithStartAndLeader":
+        return _FiguraBuilderWithStartAndLeader(name=self._name, posicion=self._posicion, leader=pattern)
 
-    def _lastCheckpoint(self) -> Checkpoint:
-        return self._figure.checkpoints[-1]
+    def withFollower(self, pattern: Pattern) -> "_FiguraBuilderWithStartAndFollower":
+        return _FiguraBuilderWithStartAndFollower(name=self._name, posicion=self._posicion, follower=pattern)
+
+
+class _FiguraBuilderWithStartAndLeader:
+
+    def __init__(self, name: str, posicion: Posicion, leader: Pattern):
+        self._name = name
+        self._posicion = posicion
+        self._leader = leader
+
+    def withFollower(self, pattern: Pattern) -> Figura:
+        return Figura(
+            name=self._name,
+            posicion_at_start=self._posicion,
+            leader=self._leader,
+            follower=pattern
+        )
+
+
+class _FiguraBuilderWithStartAndFollower:
+
+    def __init__(self, name: str, posicion: Posicion, follower: Pattern):
+        self._name = name
+        self._posicion = posicion
+        self._follower = follower
+
+    def withLeader(self, pattern: Pattern) -> Figura:
+        return Figura(
+            name=self._name,
+            posicion_at_start=self._posicion,
+            leader=pattern,
+            follower=self._follower
+        )

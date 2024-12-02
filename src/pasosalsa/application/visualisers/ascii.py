@@ -1,7 +1,7 @@
 from typing import List, Optional
 from math import atan2, degrees
 
-from ...domain.abstracts.movement import Foot
+from ...domain.abstracts.simulation import NamedFoot
 from .general import Visualiser, Figura, Panel
 
 
@@ -26,10 +26,10 @@ class PositionOnlyAsciiVisualiser(Visualiser):
             s = row_y + s  # Reverse-order concatenation
         return s
 
-    def _footToString(self, foot: Foot) -> str:
-        if foot == Foot.LeaderLeft:
+    def _footToString(self, foot: NamedFoot) -> str:
+        if foot == NamedFoot.LeaderLeft:
             return "L"
-        elif foot == Foot.LeaderRight:
+        elif foot == NamedFoot.LeaderRight:
             return "R"
         else:
             return None
@@ -42,14 +42,12 @@ class PositionOnlyAsciiVisualiser(Visualiser):
         return arrows[angle // 45]
 
     def _render(self, figure: Figura) -> List[Panel]:
+        gridspec, previous_feet, feet_and_steps = self._getRenderDetails(figure)
+
         panels = []
-
-        gridspec, starting_feet = self._normaliseGrid(figure)
         width, height = gridspec.width, gridspec.height
-
-        previous_feet = starting_feet
-        for count, (feet, checkpoint) in enumerate(zip(self._simulate(figure, base=starting_feet), figure.checkpoints)):
-            if checkpoint.hidden:
+        for count, (feet, steps) in enumerate(feet_and_steps, start=1):
+            if all(step is None for step in steps.values()):
                 previous_feet = feet
                 continue
 
@@ -60,7 +58,7 @@ class PositionOnlyAsciiVisualiser(Visualiser):
                 grid[position.x][position.y] = self._footToString(foot)
 
             # Step 2: Visualise history.
-            for foot, step in checkpoint.steps_since_previous:
+            for foot, step in steps.items():
                 start_x = previous_feet[foot].x
                 start_y = previous_feet[foot].y
                 delta_x = feet[foot].x - start_x

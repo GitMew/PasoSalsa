@@ -1,64 +1,99 @@
 from ..abstracts.figuras import *
-from ..abstracts.sequence import Sequence
+from ..abstracts.composition import *
+from ..abstracts.patterns import *
 from .movement import *
+from .posiciones import *
+
+# TODO: Activate this __all__ when you have finished all the TODOs below.
+# __all__ = ["Guapea", "VueltaDerecha", "DiLeQueNo", "Crusado", "CrusadoToEnchufla", "WideCrusado", "Enchufla", "HalfEnchufla",
+#            "EnchuflaDoble", "Exhibela", "CubanBasicStep",
+#            "EnchuflaSequence", "EnchuflaDobleSequence", "ExhibelaSequence"]
 
 
-__all__ = ["Guapea", "VueltaDerecha", "DiLeQueNo", "Crusado", "CrusadoToEnchufla", "WideCrusado", "Enchufla", "HalfEnchufla",
-           "EnchuflaDoble", "Exhibela", "CubanBasicStep",
-           "EnchuflaSequence", "EnchuflaDobleSequence", "ExhibelaSequence"]
-
-
-Guapea = BuildFigura(
-    "guapea",
-    LeaderFeetTogether
+Guapea_Leader = BuildPattern(
+    FeetTogether
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Backward
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     InPlace
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Forward
 ).count().pause().move(
-    Foot.LeaderRight,
+    RightFoot,
     Forward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     InPlace
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Backward
 ).count().pause().finish()
 
 
+Guapea = BuildFigura(
+    "guapea"
+).startsIn(
+    PosicionAbierta
+).withLeader(
+    Guapea_Leader
+).withFollower(
+    Mirror(Guapea_Leader)
+)
 
-VueltaDerecha = BuildFigura(
-    "vuelta derecha",
-    FollowerFeetTogether
+
+
+VueltaDerecha_Leader = BuildPattern(
+    FeetTogether
 ).move(
-    Foot.FollowerRight,
+    LeftFoot,
     Backward
 ).count().move(
-    Foot.FollowerLeft,
+    RightFoot,
     InPlace
 ).count().move(
-    Foot.FollowerRight,
+    LeftFoot,
     Forward
 ).count().pause().move(
-    Foot.FollowerLeft,
+    RightFoot,
+    InPlace
+).count().move(
+    LeftFoot,
+    InPlace
+).count().move(
+    RightFoot,
+    InPlace
+).count().pause().finish()
+
+
+
+VueltaDerecha_Follower = BuildPattern(
+    FeetTogether
+).move(
+    RightFoot,
+    Backward
+).count().move(
+    LeftFoot,
+    InPlace
+).count().move(
+    RightFoot,
+    Forward
+).count().pause().move(
+    LeftFoot,
     MoveThenTurn(
-        Forward + Leftward,
+        Forward + Rightward,
         Clockwise45
     )
 ).count().move(
-    Foot.FollowerRight,
+    RightFoot,
     Clockwise180
 ).count().move(
-    Foot.FollowerRight,
+    RightFoot,
     Clockwise180
 ).move(
-    Foot.FollowerLeft,
+    LeftFoot,
     TurnThenMove(
         Clockwise(360 - 45),
         Leftward + Backward
@@ -66,21 +101,34 @@ VueltaDerecha = BuildFigura(
 ).count().pause().finish()
 
 
+
+VueltaDerecha = BuildFigura(
+    "vuelta derecha"
+).startsIn(
+    PosicionAbierta
+).withLeader(
+    VueltaDerecha_Leader
+).withFollower(
+    VueltaDerecha_Follower
+)
+
+
 # TODO: VD that goes into closed position for a CBS.
 # VueltaDerechaCerranda =
 
 
-# VueltaDoble = BuildFigura(
-#     "vuelta doble",
-#     LeaderFeetTogether
+# TODO: leader steps for vuelta doble
+# VueltaDoble_Leader = BuildFigura(
+#     "vuelta doble (L)",
+#     FeetTogether
 # ).move(
-#     Foot.LeaderLeft,
+#     LeftFoot,
 #     Backward
 # ).count().move(
-#     Foot.LeaderRight,
+#     RightFoot,
 #     InPlace
 # ).count().move(
-#     Foot.LeaderLeft,
+#     LeftFoot,
 #     Forward
 # ).count().pause().move(
 #
@@ -90,37 +138,45 @@ VueltaDerecha = BuildFigura(
 #
 # ).count().pause().finish()
 
+# VueltaDoble = BuildFigura(
+#     "vuelta doble"
+# ).startsIn(
+#     PosicionAbierta
+# ).withLeader(
+#     VueltaDoble_Leader
+# ).withFollower(
+#     VueltaDerecha_Follower
+# )
 
 
-DiLeQueNo = BuildFigura(
-    "di-le que no",
-    LeaderFeetTogether
+DiLeQueNo_Leader = BuildPattern(
+    FeetTogether
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Forward
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Rightward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     MoveThenTurn(
         Backward2 + Rightward2,
         CounterClockwise90
     )
 ).move(
-    Foot.LeaderRight,
+    RightFoot,
     CounterClockwise90
 ).count().pause().move(
-    Foot.LeaderRight,
+    RightFoot,
     Rightward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     MoveThenTurn(
         Rightward2 + Forward,
         CounterClockwise90
     )
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     MoveThenTurn(
         Forward2,
         CounterClockwise90
@@ -128,123 +184,138 @@ DiLeQueNo = BuildFigura(
 ).count().pause().finish()
 
 
+# TODO: DQN follower
+# DiLeQueNo_Follower = BuildPattern(
+#     FeetTogether
+# )
+#
+#
+# DiLeQueNo = BuildFigura(
+#     "di-le que no"
+# ).startsIn(
+#     PosicionCaida
+# ).withLeader(
+#     DiLeQueNo_Leader
+# ).withFollower(
+#     DiLeQueNo_Follower
+# )
 
-Crusado = BuildFigura(
-    "crusado",
-    LeaderFeetTogether
+
+Crusado_Left = BuildPattern(
+    FeetTogether
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     InPlace
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Backward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Rightward2
 ).count().pause().move(
-    Foot.LeaderRight,
+    RightFoot,
     Forward + Rightward2
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Backward
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Leftward + Leftward
 ).count().pause().finish()
 
+Crusado_Left.setName("crusado")
 
 
-WideCrusado = BuildFigura(
-    "wide crusado",
-    LeaderFeetTogether
+WideCrusado_Left = BuildPattern(
+    FeetTogether
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Leftward
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Backward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Rightward + Rightward + Rightward
 ).count().pause().move(
-    Foot.LeaderRight,
+    RightFoot,
     Forward + Rightward + Rightward + Rightward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Backward
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Leftward + Leftward + Leftward
 ).count().pause().finish()
 
+WideCrusado_Left.setName("wide crusado")
 
 
-CrusadoToEnchufla = BuildFigura(
-    "crusado ending like enchufla",
-    LeaderLegsCrossedRightOverLeft
+CrusadoToEnchufla_Left = BuildPattern(
+    LegsCrossedRightOverLeft
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Leftward2 + Forward
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Backward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Rightward2
 ).count().pause().move(
-    Foot.LeaderRight,
+    RightFoot,
     TurnThenMove(
         Clockwise90,
         Backward
     )
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     TurnThenMove(
         Clockwise90,
         InPlace
     )
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     MoveThenTurn(
         Forward + Forward + Forward + Leftward,
         CounterClockwise90
     )
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     CounterClockwise90
 ).count().pause().finish()
 
+CrusadoToEnchufla_Left.setName("crusado ending like enchufla")
 
 
-Enchufla = BuildFigura(
-    "enchufla",
-    LeaderFeetTogether
+Enchufla_Leader = BuildPattern(
+    FeetTogether
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Backward
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Forward + Leftward + Leftward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     MoveThenTurn(
         Forward + Forward,
         Clockwise180
     )
 ).move(
-    Foot.LeaderRight,
+    RightFoot,
     Clockwise180
 ).count().pause().move(
-    Foot.LeaderRight,
+    RightFoot,
     Backward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     InPlace
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     CounterClockwise90
 ).move(
-    Foot.LeaderRight,
+    RightFoot,
     MoveThenTurn(
         Forward + Forward + Leftward,
         CounterClockwise90
@@ -252,36 +323,55 @@ Enchufla = BuildFigura(
 ).count().pause().finish()
 
 
+# TODO: Enchufla follower
+# Enchufla_Follower = BuildPattern(
+#     FeetTogether
+# )
+#
+#
+#
+# Enchufla = BuildFigura(
+#     "enchufla"
+# ).startsIn(
+#     PosicionAbierta
+# ).withLeader(
+#     Enchufla_Leader
+# ).withFollower(
+#     Enchufla_Follower
+# )
 
-HalfEnchufla = BuildFigura(
-    "half-enchufla",
-    LeaderFeetTogether
+
+
+
+
+HalfEnchufla_Leader = BuildPattern(
+    FeetTogether
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Backward
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Forward + Leftward + Leftward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     MoveThenTurn(
         Forward + Forward,
         Clockwise180
     )
 ).move(
-    Foot.LeaderRight,
+    RightFoot,
     Clockwise180
 ).count().pause().move(
-    Foot.LeaderRight,
+    RightFoot,
     Backward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Forward
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     CounterClockwise180
 ).move(
-    Foot.LeaderRight,
+    RightFoot,
     MoveThenTurn(
         Forward2 + Leftward2,
         CounterClockwise180
@@ -289,55 +379,65 @@ HalfEnchufla = BuildFigura(
 ).count().pause().finish()
 
 
+# TODO: HE follower
+# HalfEnchufla_Follower = BuildPattern(
+#     FeetTogether
+# )
+#
+#
+# HalfEnchufla = BuildFigura("half-enchufla")\
+#     .startsIn(PosicionAbierta)\
+#     .withLeader(HalfEnchufla_Leader)\
+#     .withFollower(HalfEnchufla_Follower)
 
-EnchuflaDoble = Sequence(
-    "enchufla doble",
-    HalfEnchufla, Enchufla
-)
+
+# EnchuflaDoble = FiguraSequence(
+#     "enchufla doble",
+#     HalfEnchufla, Enchufla
+# )
 
 
 
-CubanBasicStep = BuildFigura(
-    "cuban basic step",
-    LeaderFeetTogether
+LeaderCubanBasicStep = BuildPattern(
+    FeetTogether
 ).move(
-    Foot.LeaderRight,
+    RightFoot,
     CounterClockwise45
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     MoveThenTurn(
         Backward + Rightward,
         CounterClockwise90
     )
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     InPlace
 ).count().move(
-    Foot.LeaderRight,
+    RightFoot,
     Clockwise45
 ).move(
-    Foot.LeaderLeft,
+    LeftFoot,
     TurnThenMove(
         Clockwise90,
         Leftward + Forward
     )
 ).count().pause().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     Clockwise45
 ).move(
-    Foot.LeaderRight,
+    RightFoot,
     MoveThenTurn(
         Backward + Leftward,
         Clockwise90
     )
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     InPlace
 ).count().move(
-    Foot.LeaderLeft,
+    LeftFoot,
     CounterClockwise45
 ).move(
-    Foot.LeaderRight,
+    RightFoot,
     TurnThenMove(
         CounterClockwise90,
         Rightward + Forward
@@ -346,29 +446,88 @@ CubanBasicStep = BuildFigura(
 
 
 
-Exhibela = Sequence(
-    "exhibela",
-    Crusado, CrusadoToEnchufla
+CubanBasicStep = BuildFigura("Cuban basic step")\
+    .startsIn(PosicionCerrada)\
+    .withLeader(LeaderCubanBasicStep)\
+    .withFollower(Mirror(LeaderCubanBasicStep))
+
+
+PasealaEnFrente = BuildFigura("pasea-la en frente")\
+    .startsIn(PosicionCerrada)\
+    .withLeader(Crusado_Left)\
+    .withFollower(LikeFollowerIn(CubanBasicStep))
+
+
+Exhibela = BuildFigura("exhibela")\
+    .startsIn(PosicionCaida)\
+    .withLeader(PatternSequence(
+        Crusado_Left,
+        CrusadoToEnchufla_Left
+    ))\
+    .withFollower(PatternSequence(
+        LikeFollowerIn(VueltaDerecha),
+        LikeFollowerIn(VueltaDerecha)
+    ))
+
+
+
+Sacala_Leader = PatternSequence(
+    TimeReversed(Mirror(LikeLeaderIn(Guapea))),
+    BuildPattern(
+        FeetTogether
+    ).move(
+        LeftFoot,
+        Forward
+    ).count().move(
+        RightFoot,
+        InPlace
+    ).count().move(
+        LeftFoot,
+        Backward
+    ).count().pause().move(
+        RightFoot,
+        Backward
+    ).count().move(
+        LeftFoot,
+        MoveThenTurn(
+            Forward + Rightward,
+            Clockwise90
+        )
+    ).count().move(
+        RightFoot,
+        MoveThenTurn(
+            Forward,
+            Clockwise90
+        )
+    ).count().pause().finish()
 )
 
 
 
-EnchuflaSequence = Sequence(
-    "enchufla sequence",
-    Enchufla, DiLeQueNo
-)
-EnchuflaDobleSequence = Sequence(
-    "enchufla doble sequence",
-    EnchuflaDoble, DiLeQueNo
-)
-ExhibelaSequence = Sequence(
-    "exhibela sequence",
-    Enchufla, Exhibela, DiLeQueNo
-)
+Sacala = BuildFigura("sacala")\
+    .startsIn(PosicionAbajo)\
+    .withLeader(Sacala_Leader)\
+    .withFollower(LikeFollowerIn(Exhibela))
 
 
-# TODO: Sacala
-# SacalaSequence = Sequence(
+# TODO: I have no idea how the leader nor the follower move in a sacala setup.
+# Sacachufla_Leader = BuildPattern(
+#     FeetTogether
+# )
+
+# EnchuflaSequence = FiguraSequence(
+#     "enchufla sequence",
+#     Enchufla, DiLeQueNo
+# )
+# EnchuflaDobleSequence = FiguraSequence(
+#     "enchufla doble sequence",
+#     EnchuflaDoble, DiLeQueNo
+# )
+# ExhibelaSequence = FiguraSequence(
+#     "exhibela sequence",
+#     Enchufla, Exhibela, DiLeQueNo
+# )
+# SacalaSequence = FiguraSequence(
 #   "sacala sequence",
 #   Sacachufla, Sacala, DiLeQueNo
 # )

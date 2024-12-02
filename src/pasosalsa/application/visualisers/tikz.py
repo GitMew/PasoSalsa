@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Union
 
-from .general import Visualiser, Figura, Panel, GridSpec
-from ...domain.abstracts.movement import Foot, FootPosition
+from .general import Visualiser, Figura, Panel, GridSpec, Pattern, Visualisable
 from ...domain.instances.movement import InPlace
+from ...domain.abstracts.simulation import AbsoluteFootState, NamedFoot, Person
 
 
 class TikzVisualiser(Visualiser):
@@ -10,15 +10,14 @@ class TikzVisualiser(Visualiser):
     Prints the positions of the steps as TikZ code.
     """
 
-    def _render(self, figure: Figura) -> List[Panel]:
-        gridspec, starting_feet = self._normaliseGrid(figure)
-        width, height = gridspec.width, gridspec.height
-        panels = []
+    def _render(self, pattern_or_figura: Visualisable) -> List[Panel]:
+        gridspec, previous_feet, feet_and_steps = self._getRenderDetails(pattern_or_figura)
 
-        previous_feet = starting_feet
-        for count, (feet, checkpoint) in enumerate(zip(self._simulate(figure, base=starting_feet), figure.checkpoints)):
-            if checkpoint.hidden:
-                previous_feet = feet
+        panels = []
+        width, height = gridspec.width, gridspec.height
+        for count, (states, steps) in enumerate(feet_and_steps, start=1):
+            if all(step is None for step in steps.values()):  # Pause == nobody moved.
+                previous_feet = states
                 continue
 
             # Step 1: Just the grid.
@@ -35,13 +34,13 @@ class TikzVisualiser(Visualiser):
             panel_string += r"    }" + "\n"
 
             # Step 2: Visualise feet.
-            for foot, position in feet.items():
+            for foot, position in states.items():
                 panel_string += r"    \node[rotate=" + str(position.rotation-90) + "] at " + self._positionToMatrixCoordinate(position, gridspec) + " {" + self._footToString(foot) + "};\n"
 
             # # Step 3: Visualise history.
-            for foot, step in checkpoint.steps_since_previous:
+            for foot, step in steps.items():
                 start = previous_feet[foot]
-                end   = feet[foot]
+                end   = states[foot]
                 if not start.isSamePlace(end):
                     panel_string += r"    \draw[salsa-arrow] " + self._positionToMatrixCoordinate(start, gridspec, anchor_center=True) + " to " + self._positionToMatrixCoordinate(end, gridspec) + ";\n"
                 elif step == InPlace:
@@ -50,7 +49,7 @@ class TikzVisualiser(Visualiser):
             panel_string += r"\end{tikzpicture}"
             panels.append(Panel(rendered=panel_string, count=count))
 
-            previous_feet = feet
+            previous_feet = states
 
         return panels
 
@@ -67,16 +66,21 @@ class TikzVisualiser(Visualiser):
         result += r"\end{longtable}"
         return result
 
-    def _positionToMatrixCoordinate(self, position: FootPosition, gridspec: GridSpec, anchor_center: bool=False) -> str:
+    def _positionToMatrixCoordinate(self, position: AbsoluteFootState, gridspec: GridSpec, anchor_center: bool=False) -> str:
         return f"(m-{gridspec.height-1-position.y+2}-{position.x+2}" + ".center"*anchor_center + ")"
 
-    def _footToString(self, foot: Foot) -> str:
-        if foot == Foot.LeaderLeft:
+    def _footToString(self, foot: NamedFoot) -> str:
+        # TODO: You likely want to style these, because otherwise it gets confusing who is who.
+        if foot == NamedFoot.LeaderLeft:
             return "L"
-        elif foot == Foot.LeaderRight:
+        elif foot == NamedFoot.LeaderRight:
+            return "R"
+        elif foot == NamedFoot.FollowerLeft:
+            return "L"
+        elif foot == NamedFoot.FollowerRight:
             return "R"
         else:
-            return None
+            raise NotImplementedError
 
     def preamble(self) -> str:
         return r"""
