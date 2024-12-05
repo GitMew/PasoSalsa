@@ -8,6 +8,14 @@ def peek(s: Iterable[T]) -> T:
         return thing
 
 
+def first(i: Iterable[T]) -> Optional[T]:
+    result = None
+    for thing in i:
+        result = thing
+        break
+    return result
+
+
 def last(i: Iterable[T]) -> Optional[T]:
     result = None
     for thing in i:

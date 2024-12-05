@@ -5,24 +5,44 @@ What you need to define figure is 4 things:
     3. Starting pose and foot pattern for the man relative to his foot baseline.
     4. Starting pose and foot pattern for the woman relative to her foot baseline.
 
-We define all of these in this file.
+We define all of these in this file. They are agnostic to the person performing them.
 """
 from typing import Optional, List
 from enum import Enum
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 
-from .movement import _Step
+from .movement import _RelativeStep
+
+
+class _Foot(Enum):
+    LEFT  = 1
+    RIGHT = 2
+
+
+LeftFoot  = _Foot.LEFT
+RightFoot = _Foot.RIGHT
 
 
 @dataclass
 class Count:
     """One movement of the left and/or right foot. Represents 1 of the 4 counts in a bar of salsa music."""
-    left:  Optional[_Step] = None
-    right: Optional[_Step] = None
+    left:  Optional[_RelativeStep] = None
+    right: Optional[_RelativeStep] = None
+
+    def copy(self) -> "Count":
+        return Count(left=self.left, right=self.right)
 
     def isPause(self) -> bool:
         return self.left is None and self.right is None
+
+    def setFoot(self, foot: _Foot, step: _RelativeStep):
+        if foot == LeftFoot:
+            self.left = step
+        elif foot == RightFoot:
+            self.right = step
+        else:
+            raise ValueError(f"Unknown foot: {foot}")
 
     def __neg__(self) -> "Count":
         return Count(
@@ -31,23 +51,18 @@ class Count:
         )
 
 
-class Posicion(ABC):
+class Posicion(Count):
     """
     Describes where the follower is relative to the leader.
-
-    Posiciones are defined assuming the leader and follower are standing feet together on their baseline. Since starting
-    positions are defined starting from that baseline too, the way you get to a follower from the leader is as follows:
-        - Start at leader pose.
-        - Invert it to get back to the baseline.
-        - Add the posicion.
-        - Add the follower pose.
+    Posiciones are defined assuming the leader and follower are standing feet together on their baseline.
     """
-    @abstractmethod
-    def leaderBaselineToFollowerBaseline(self) -> Count:
-        pass
+    pass
 
 
 class StartingPose(Count):
+    """
+    Describes where a person is relative to their baseline.
+    """
     pass
 
 
@@ -65,6 +80,12 @@ class Pattern:
     def duration(self) -> int:
         return len(self.counts)
 
+    def copy(self) -> "Pattern":
+        return Pattern(
+            start=self.start.copy(),
+            counts=[c.copy() for c in self.counts]
+        )
+
     def setName(self, name: str):
         """
         Setting the name of a pattern in its constructor is optional, because usually it can be inferred from where it
@@ -76,29 +97,15 @@ class Pattern:
         return (self.name if self.name else "unnamed pattern") + f" [{self.duration()}]"
 
 
-class _Foot(Enum):
-    LEFT  = 1
-    RIGHT = 2
-
-
-LeftFoot  = _Foot.LEFT
-RightFoot = _Foot.RIGHT
-
-
 class BuildPattern:
 
     def __init__(self, base: StartingPose):
         self._pattern = Pattern(base, [])
         self.count()
 
-    def move(self, foot: _Foot, step: _Step) -> "BuildPattern":
+    def move(self, foot: _Foot, step: _RelativeStep) -> "BuildPattern":
         """Add a movement that should be done by the time the next count hits."""
-        if foot == LeftFoot:
-            self._pattern.counts[-1].left = step
-        elif foot == RightFoot:
-            self._pattern.counts[-1].right = step
-        else:
-            raise ValueError(f"Unknown foot: {foot}")
+        self._pattern.counts[-1].setFoot(foot, step)
         return self
 
     def count(self) -> "BuildPattern":

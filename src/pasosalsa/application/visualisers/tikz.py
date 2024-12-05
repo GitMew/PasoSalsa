@@ -2,7 +2,8 @@ from typing import List, Union
 
 from .general import Visualiser, Figura, Panel, GridSpec, Pattern, Visualisable
 from ...domain.instances.movement import InPlace
-from ...domain.abstracts.simulation import AbsoluteFootState, NamedFoot, Person
+from ...domain.abstracts.simulation import AbsoluteFootState, NamedFoot, Person, _StepVisitor
+from ...domain.abstracts.movement import *
 
 
 class TikzVisualiser(Visualiser):
@@ -106,3 +107,21 @@ class TikzVisualiser(Visualiser):
 
 \newcommand{\filler}{\phantom{M}}
         """
+
+
+class StepToTikz(_StepVisitor):
+    """
+    TODO: In-place arrows when dealing with any kind of Turn.
+    """
+
+    def visit_Move(self, step: Move):
+        pass
+
+    def visit_Turn(self, step: Turn):
+        pass
+
+    def visit_MoveThenTurn(self, step: MoveThenTurn):
+        pass
+
+    def visit_TurnThenMove(self, step: TurnThenMove):
+        pass

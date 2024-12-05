@@ -12,7 +12,7 @@ from copy import deepcopy
 from math import cos, sin, radians
 
 from .patterns import Count, Pattern
-from .movement import _StepVisitor, Move, Turn, MoveThenTurn, TurnThenMove, _Step
+from .movement import _StepVisitor, Move, Turn, MoveThenTurn, TurnThenMove, _RelativeStep
 from .figuras import Figura
 from ...util.iterables import peek, last
 
@@ -26,6 +26,29 @@ class AbsoluteFootState:
 
     def isSamePlace(self, other: "AbsoluteFootState") -> bool:
         return self.x == other.x and self.y == other.y
+
+    def getForwardUnitVector(self) -> Tuple[float,float]:
+        return cos(radians(self.rotation)), sin(radians(self.rotation))
+
+    def getRightwardUnitVector(self) -> Tuple[float,float]:
+        return cos(radians(self.rotation-90)), sin(radians(self.rotation-90))
+
+    def __sub__(self, other: "AbsoluteFootState") -> MoveThenTurn:
+        # Get movement vector
+        delta_x = self.x - other.x
+        delta_y = self.y - other.y
+
+        # Project it onto the relative axes
+        forward_x, forward_y = self.getForwardUnitVector()
+        right_x, right_y     = self.getRightwardUnitVector()
+
+        forward_delta = delta_x*forward_x + delta_y*forward_y
+        right_delta   = delta_x*right_x   + delta_y*right_y
+
+        return MoveThenTurn(
+            Move(forward=round(forward_delta), rightward=round(right_delta)),
+            Turn(degrees=self.rotation - other.rotation)
+        )
 
 
 class NamedFoot(Enum):
@@ -58,7 +81,7 @@ class SimulatedPosition(_StepVisitor):
     def __init__(self, starting_position: AbsoluteFootState):
         self.position = starting_position
 
-    def update(self, step: _Step):
+    def update(self, step: _RelativeStep):
         return self.visit(step)
 
     def visit_Move(self, step: Move):
@@ -94,9 +117,9 @@ class SimulatedPosition(_StepVisitor):
 
 
 TwoUnnamedFeetStates = Tuple[AbsoluteFootState, AbsoluteFootState]  # State of two unnamed feet.
-TwoUnnamedFeetSteps  = Tuple[_Step, _Step]  # Movement of two unnamed feet.
+TwoUnnamedFeetSteps  = Tuple[_RelativeStep, _RelativeStep]  # Movement of two unnamed feet.
 NamedFeetStates = Dict[NamedFoot, AbsoluteFootState]  # State of up to four named feet.
-NamedFeetSteps  = Dict[NamedFoot, _Step]              # Movement of up to four named feet.
+NamedFeetSteps  = Dict[NamedFoot, _RelativeStep]              # Movement of up to four named feet.
 UnnamedCountResult = Tuple[TwoUnnamedFeetStates, TwoUnnamedFeetSteps]  # State and movement, each of two unnamed feet.
 NamedCountResult = Tuple[NamedFeetStates, NamedFeetSteps]  # State and movement, each of any amount of named feet.
 
@@ -215,7 +238,7 @@ class Couple(Agent):
         self.follower = Follower(leader_baseline)
 
     def moveFollowerToBaseline(self, figura: Figura):
-        self.follower.executeCount(figura.starting_posicion.leaderBaselineToFollowerBaseline())
+        self.follower.executeCount(figura.starting_posicion)
 
     def executeFiguraStartingPose(self, figura: Figura) -> NamedFeetStates:
         """
@@ -230,7 +253,7 @@ class Couple(Agent):
         return leader_feet | follower_feet
 
     def executeFigura(self, figura: Figura) -> Iterable[Tuple[NamedFeetStates, NamedFeetSteps]]:
-        if not self.follower.body._first_pattern_ever:
+        if self.follower.body._first_pattern_ever:
             self.moveFollowerToBaseline(figura)
 
         for (states1,steps1), (states2,steps2) in zip(self.leader.executeFigura(figura), self.follower.executeFigura(figura)):

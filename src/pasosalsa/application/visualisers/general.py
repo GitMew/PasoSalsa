@@ -93,6 +93,9 @@ class Visualiser(ABC):
         Finds the smallest grid dimensions possible covered by the given figure/pattern,
         as well as how much the baseline must shift in that (0-based, right-handed) grid for the leftmost, downmost
         coordinates to be exactly 0.
+
+        TODO: Since simulation doesn't output the 0th count (at least not currently), it is possible that if a grid row/column
+              is only ever visited in the 0th count, the grid will be too small to show this.
         """
         xs = []
         ys = []

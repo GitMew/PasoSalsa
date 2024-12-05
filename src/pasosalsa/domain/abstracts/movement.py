@@ -1,12 +1,15 @@
+"""
+Everything to do with relative movement.
+"""
 from dataclasses import dataclass
 from abc import abstractmethod, ABC
 from typing_extensions import Self
 
 
-class _Step(ABC):
+class _RelativeStep(ABC):
     """A step is one movement of a foot relative to its current position."""
     @abstractmethod
-    def reversed(self) -> "_Step":
+    def reversed(self) -> "_RelativeStep":
         pass
 
     @abstractmethod
@@ -23,7 +26,7 @@ class _Step(ABC):
 
 
 @dataclass
-class Move(_Step):
+class Move(_RelativeStep):
     forward: int
     rightward: int
 
@@ -42,7 +45,7 @@ class Move(_Step):
 
 
 @dataclass
-class Turn(_Step):
+class Turn(_RelativeStep):
     degrees: int
 
     def __add__(self, other: "Turn") -> "Turn":
@@ -59,7 +62,7 @@ class Turn(_Step):
 
 
 @dataclass
-class MoveThenTurn(_Step):
+class MoveThenTurn(_RelativeStep):
     move: Move
     turn: Turn
 
@@ -74,7 +77,7 @@ class MoveThenTurn(_Step):
 
 
 @dataclass
-class TurnThenMove(_Step):
+class TurnThenMove(_RelativeStep):
     turn: Turn
     move: Move
 
@@ -93,7 +96,7 @@ class _StepVisitor(ABC):
     Interface for visitors of _Step objects. Helps to keep more advanced implementations (e.g. coordinate transforms)
     out of the _Step classes, which are only meant for declaration of relative movements.
     """
-    def visit(self, step: _Step):
+    def visit(self, step: _RelativeStep):
         return step.accept(self)
 
     @abstractmethod

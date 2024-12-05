@@ -5,7 +5,7 @@ from .movement import *
 from .posiciones import *
 
 # TODO: Activate this __all__ when you have finished all the TODOs below.
-# __all__ = ["Guapea", "VueltaDerecha", "DiLeQueNo", "Crusado", "CrusadoToEnchufla", "WideCrusado", "Enchufla", "HalfEnchufla",
+# __all__ = ["Guapea", "VueltaDerecha", "DiLeQueNo", "Cruzado", "CruzadoToEnchufla", "WideCruzado", "Enchufla", "HalfEnchufla",
 #            "EnchuflaDoble", "Exhibela", "CubanBasicStep",
 #            "EnchuflaSequence", "EnchuflaDobleSequence", "ExhibelaSequence"]
 
@@ -201,7 +201,7 @@ DiLeQueNo_Leader = BuildPattern(
 # )
 
 
-Crusado_Left = BuildPattern(
+Cruzado_Left_Start = BuildPattern(
     FeetTogether
 ).move(
     LeftFoot,
@@ -223,10 +223,10 @@ Crusado_Left = BuildPattern(
     Leftward + Leftward
 ).count().pause().finish()
 
-Crusado_Left.setName("crusado")
+Cruzado_Left_Start.setName("cruzado")
 
 
-WideCrusado_Left = BuildPattern(
+WideCruzado_Left_Start = BuildPattern(
     FeetTogether
 ).move(
     LeftFoot,
@@ -248,10 +248,20 @@ WideCrusado_Left = BuildPattern(
     Leftward + Leftward + Leftward
 ).count().pause().finish()
 
-WideCrusado_Left.setName("wide crusado")
+WideCruzado_Left_Start.setName("wide cruzado")
 
 
-CrusadoToEnchufla_Left = BuildPattern(
+# The "loopable" automatically finds the LeftFoot instructions below:
+# Cruzado_Left_Continued = WithReplacedStep(
+#     WithReplacedStartByEnd(Cruzado_Left_Start),
+#     1,
+#     LeftFoot,
+#     Leftward2 + Forward
+# )
+Cruzado_Left_Loopable = Loopable(Cruzado_Left_Start)
+
+
+Cruzado_Left_End = BuildPattern(
     LegsCrossedRightOverLeft
 ).move(
     LeftFoot,
@@ -264,28 +274,19 @@ CrusadoToEnchufla_Left = BuildPattern(
     Rightward2
 ).count().pause().move(
     RightFoot,
-    TurnThenMove(
-        Clockwise90,
-        Backward
-    )
+    Clockwise90
 ).count().move(
     LeftFoot,
-    TurnThenMove(
-        Clockwise90,
-        InPlace
-    )
+    Leftward2
 ).count().move(
     RightFoot,
-    MoveThenTurn(
-        Forward + Forward + Forward + Leftward,
-        CounterClockwise90
+    TurnThenMove(
+        CounterClockwise90,
+        Forward
     )
-).move(
-    LeftFoot,
-    CounterClockwise90
 ).count().pause().finish()
 
-CrusadoToEnchufla_Left.setName("crusado ending like enchufla")
+Cruzado_Left_End.setName("cruzado ending with feet together")
 
 
 Enchufla_Leader = BuildPattern(
@@ -451,22 +452,120 @@ CubanBasicStep = BuildFigura("Cuban basic step")\
     .withLeader(LeaderCubanBasicStep)\
     .withFollower(Mirror(LeaderCubanBasicStep))
 
+CumbiaBasic = CubanBasicStep  # "Cuban basic step" is used at our school, Cumbia basic is used e.g. here: https://salsayo.com/move/Back-Rocks and also https://thedancedojo.com/how-to-salsa-dance-for-beginners/back-and-cumbia-salsa-basic-steps
+
+
+# Guapea, except
+#   1. you "overstep" and your feet form a diagonal in resting position rather than being together, and
+#   2. the men start forwards so that the distance between the partners is the same.
+# Called "pa' ti, pa' mi" by Salsaficion (but that name is already used for a turn for woman, turn for man, turn for woman), "salsa" by our Cuban teacher and "basic step" by our Flemish teacher. Seems to be called Mambo elsewhere: https://salsayo.com/move/Basic-Steps and https://salsayo.com/move/Closed-Position-Basic-Steps
+MamboBasicStep_Leader_Start = BuildPattern(
+    FeetTogether
+).move(
+    LeftFoot,
+    Forward
+).count().move(
+    RightFoot,
+    InPlace
+).count().move(
+    LeftFoot,
+    Backward2
+).count().pause().move(
+    RightFoot,
+    Backward2
+).count().move(
+    LeftFoot,
+    InPlace
+).count().move(
+    RightFoot,
+    Forward2
+).count().pause().finish()
+
+
+WalkingVueltaDerecha_Follower_Start = BuildPattern(  # Is to vuelta derecha what Mambo is to Guapea.
+    FeetTogether
+).move(
+    RightFoot,
+    Backward
+).count().move(
+    LeftFoot,
+    InPlace
+).count().move(
+    RightFoot,
+    Forward2
+).count().pause().move(
+    LeftFoot,
+    MoveThenTurn(
+        Forward2 + Rightward,
+        Clockwise45
+    )
+).count().move(
+    RightFoot,
+    Clockwise180
+).count().move(
+    RightFoot,
+    Clockwise180
+).move(
+    LeftFoot,
+    TurnThenMove(
+        Clockwise(360 - 45),
+        Leftward + Backward2
+    )
+).count().pause().finish()
+
+
+WalkingVueltaDerecha_Follower_End = BuildPattern(  # Is to vuelta derecha what Mambo is to Guapea.
+    FeetDiagonalRightForward
+).move(
+    RightFoot,
+    Backward2
+).count().move(
+    LeftFoot,
+    InPlace
+).count().move(
+    RightFoot,
+    Forward2
+).count().pause().move(
+    LeftFoot,
+    MoveThenTurn(
+        Forward2 + Rightward,
+        Clockwise45
+    )
+).count().move(
+    RightFoot,
+    TurnThenMove(
+        Clockwise180,
+        Forward
+    )
+).count().move(
+    RightFoot,
+    Clockwise180
+).move(
+    LeftFoot,
+    TurnThenMove(
+        Clockwise(360 - 45),
+        Leftward + Backward2
+    )
+).count().pause().finish()
+
 
 PasealaEnFrente = BuildFigura("pasea-la en frente")\
     .startsIn(PosicionCerrada)\
-    .withLeader(Crusado_Left)\
+    .withLeader(Cruzado_Left_Start)\
     .withFollower(LikeFollowerIn(CubanBasicStep))
 
+
+# TODO: Is this the same as Aguajea? I feel like aguajea has much more dramatic movements and is not a Cuban basic step but more like she's doing feet of half-enchufla. ("el aguaje" means "the tide" or "the wave", so "aguajea" is perhaps a neologism that means "to go back and forth like the waves of the sea")
 
 Exhibela = BuildFigura("exhibela")\
     .startsIn(PosicionCaida)\
     .withLeader(PatternSequence(
-        Crusado_Left,
-        CrusadoToEnchufla_Left
+        Cruzado_Left_Start,
+        Cruzado_Left_End
     ))\
     .withFollower(PatternSequence(
-        LikeFollowerIn(VueltaDerecha),
-        LikeFollowerIn(VueltaDerecha)
+        WalkingVueltaDerecha_Follower_Start,
+        WalkingVueltaDerecha_Follower_End
     ))
 
 

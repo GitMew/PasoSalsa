@@ -1,8 +1,7 @@
 from ..abstracts.movement import *
-from ..abstracts.patterns import StartingPose
 
 
-InPlace   = Move(0,0)
+InPlace   = Move(0,0)  # Not the same as a None move! Stepping in-place is still stepping!
 Forward   = Move(+1,0)
 Backward  = Move(-1,0)
 Leftward  = Move(0,-1)
@@ -25,8 +24,3 @@ def Clockwise(degrees: int) -> Turn:
 
 def CounterClockwise(degrees: int) -> Turn:
     return Turn(+degrees)
-
-
-FeetTogether = StartingPose(InPlace,InPlace)
-LegsCrossedRightOverLeft = StartingPose(left=Backward + Rightward2, right=InPlace)
-LegsCrossedLeftOverRight = StartingPose(left=InPlace, right=Backward + Leftward2)
