@@ -1,9 +1,7 @@
 # TODO
-- Add missing patterns. (For DQN, use the infamous video.)
+- Add missing patterns.
   - "Balancing step", but I don't know what it is in Spanish.
-  - Pa'-ti pa'-mi step (if it's called that, at least)
-  - Possibly, both exhibela and sacala have a "walking vuelta derecha" rather than being in-place.
-- Exhibela doesn't end in caida. Something ain't right.
+- Should be possible to render the "both" view but with the follower's baseline at the bottom, not the leader's.
 - Smarter arrows:
   - Bendy arrows (can probably figure this out based on clockwise vs counterclockwise)
   - In-place rotating arrows. Right now, it's hard to spot that a letter has turned by a certain angle.
@@ -15,4 +13,6 @@
 - For figures like crusado, there is an "alternate" base.
   - Actually, it might be better to have a "simulated base" and a "canonical base". You don't need to clarify that crusado
     can start in crossed legs because that's what it ends in when you simulate it.
-- Coarse-grained view (i.e. just leader-follower, not the feet)
+- Centre-of-mass view (i.e. just leader-follower, not the feet)
+  - You can do this quite easily, I believe. Rather than visualising the feet, visualise the point average between the feet,
+    and perhaps connect them with lines. Boom.

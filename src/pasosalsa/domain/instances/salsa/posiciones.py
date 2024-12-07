@@ -1,5 +1,5 @@
-from ..abstracts.patterns import *
-from .movement import *
+from ...abstracts.patterns import *
+from ..movement import *
 
 
 # Open position, i.e. leader and follower facing each other with enough space in between to move a foot forward each without colliding.
