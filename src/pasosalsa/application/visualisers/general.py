@@ -72,7 +72,7 @@ class Visualiser(ABC):
 
     def _simulate(self, simulator: Agent, pattern_or_figura: Visualisable) -> Iterable[NamedCountResult]:
         if isinstance(pattern_or_figura, Pattern):
-            assert isinstance(simulator, Person)
+            assert isinstance(simulator, Person), "You asked to visualise a single-person pattern while in two-person mode!"
             yield from simulator.executePattern(pattern_or_figura)
         elif isinstance(pattern_or_figura, Figura):
             yield from simulator.executeFigura(pattern_or_figura)

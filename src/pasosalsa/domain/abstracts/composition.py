@@ -1,6 +1,6 @@
 from typing import Optional
 
-from .patterns import Count, Pattern, StartingPose, _Foot
+from .patterns import Count, Pattern, StartingPose, _Foot, BuildPattern, LeftFoot, RightFoot
 from .figuras import Figura
 from .simulation import areCompatibleFiguras, areCompatiblePatterns, Body, AbsoluteFootState, last
 from .movement import MoveThenTurn, Move, Turn, _RelativeStep
@@ -111,7 +111,7 @@ def WithReplacedStartByEnd(pattern: Pattern) -> Pattern:
     return new_pattern
 
 
-def WithReplacedStep(pattern: Pattern, count: int, foot: _Foot, step: Optional[_RelativeStep]) -> Pattern:
+def WithReplacedStep(count: int, pattern: Pattern, foot: _Foot, step: Optional[_RelativeStep]) -> Pattern:
     assert count <= len(pattern.counts)
 
     new_pattern = pattern.copy()
@@ -134,3 +134,24 @@ def Loopable(pattern: Pattern) -> Pattern:
     new_pattern.start     = Count(left=left_count8 - baseline_left, right=right_count8 - baseline_right)  # .start is the difference between starting position and baseline.
     new_pattern.counts[0] = Count(left=left_count1 - left_count8,   right=right_count1 - right_count8)    # The movement you need to do on count 1 to get into the result of the old count 1 but from count 8 rather than the old starting position.
     return new_pattern
+
+
+def UntilCount(count: int, pattern: Pattern) -> BuildPattern:
+    """
+    Truncates a pattern to the given count, and returns a builder that starts after that count for building a new pattern.
+    """
+    assert count <= len(pattern.counts)
+
+    builder = BuildPattern(pattern.start)
+    for count in pattern.counts[:count]:  # E.g. if count == 1, only the first count will be identical.
+        builder = builder\
+            .move(LeftFoot, count.left)\
+            .move(RightFoot, count.right)\
+            .count()
+    # You can probably also just do it this way:
+    #    builder._pattern = Pattern(start=pattern.start, count=pattern.counts[:count])
+    return builder
+
+
+def WithFirstBar(pattern: Pattern) -> BuildPattern:
+    return UntilCount(4, pattern)

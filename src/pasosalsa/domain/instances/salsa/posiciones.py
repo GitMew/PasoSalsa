@@ -66,3 +66,4 @@ LegsCrossedRightOverLeft = StartingPose(left=Backward + Rightward2, right=InPlac
 LegsCrossedLeftOverRight = StartingPose(left=InPlace, right=Backward + Leftward2)
 FeetDiagonalLeftBackward = StartingPose(left=Backward, right=InPlace)
 FeetDiagonalRightForward = StartingPose(left=InPlace, right=Forward)
+FeetApartRight = StartingPose(InPlace,Rightward)
