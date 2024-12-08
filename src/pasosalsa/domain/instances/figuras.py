@@ -2,10 +2,10 @@ from ..abstracts.figuras import *
 from ..abstracts.composition import *
 from .salsa.posiciones import *
 
-__all__ = ["Guapea", "VueltaDerecha", "VueltaDerechaCerranda",
+__all__ = ["Guapea", "VueltaDerecha", "VueltaDerechaCerranda", "VueltaDoble",
            "DiLeQueNo", "Enchufla", "HalfEnchufla", "EnchuflaDoble", "Exhibela", "Sacala",
-           "PalMedio", "CubanBasicStep", "Aguajea",
-           "Setenta", "EnchuflaSequence", "EnchuflaDobleSequence", "ExhibelaSequence"]
+           "PalMedio", "CubanBasicStep", "PasealaEnFrente", "Aguajea",
+           "Setenta", "EnchuflaSequence", "EnchuflaDobleSequence", "ExhibelaSequence", "SacalaSequence"]
 
 
 Guapea_Leader = BuildPattern(
@@ -119,37 +119,20 @@ VueltaDerechaCerranda = BuildFigura("vuelta derecha cerranda")\
     .withFollower(LikeFollowerIn(VueltaDerecha))
 
 
-# TODO: leader steps for vuelta doble
-# VueltaDoble_Leader = BuildFigura(
-#     "vuelta doble (L)",
-#     FeetTogether
-# ).move(
-#     LeftFoot,
-#     Backward
-# ).count().move(
-#     RightFoot,
-#     InPlace
-# ).count().move(
-#     LeftFoot,
-#     Forward
-# ).count().pause().move(
-#
-# ).count().move(
-#
-# ).count().move(
-#
-# ).count().pause().finish()
 
-# VueltaDoble = BuildFigura("vuelta doble")\
-#     .startsIn(PosicionAbierta)\
-#     .withLeader(VueltaDoble_Leader)\
-#     .withFollower(VueltaDerecha_Follower)
+VueltaDoble = BuildFigura("vuelta doble")\
+    .startsIn(PosicionAbierta)\
+    .withLeader(Mirror(LikeFollowerIn(VueltaDerecha)))\
+    .withFollower(LikeFollowerIn(VueltaDerecha))
 
 
+
+# My di-le que no (DQN), and in fact the entire PasoSalsa package's rectangular grid interpretation of salsa, were
+# inspired by the following 33-second video: https://www.youtube.com/watch?v=h8Xj1Kin9Qs
 DiLeQueNo = BuildFigura("di-le que no")\
     .startsIn(PosicionCaida)\
     .withLeader(
-        BuildPattern(  # Inspired by https://www.youtube.com/watch?v=h8Xj1Kin9Qs
+        BuildPattern(
             FeetTogether
         ).move(
             LeftFoot,
@@ -312,6 +295,7 @@ Cruzado_Left_End = BuildPattern(
 Cruzado_Left_End.setName("cruzado ending with feet together")
 
 
+
 Enchufla_Leader = BuildPattern(
     FeetTogether
 ).move(
@@ -347,6 +331,7 @@ Enchufla_Leader = BuildPattern(
 ).count().pause().finish()
 
 
+
 Enchufla_Follower = BuildPattern(
     FeetTogether
 ).move(
@@ -377,6 +362,14 @@ Enchufla_Follower = BuildPattern(
 
 
 
+# My enchufla / enchufa-la / enchufa is mainly based on experience. I don't think I've actually seen it online the way
+# I do it, but followers seem to like it. The gist is that the leader and follower both turn 180°, followed by
+# the leader turning back 90° to create the posicion caida.
+# I've been told that this is wrong because the leader should end at 180° and the follower at 90°. My version of the leader
+# is taken from Salsificion's enchufla (https://www.youtube.com/watch?v=_XZRaU3_pD8), although there, the follower turns
+# an extra 90° to end up next to the leader, and in the DQN that follows, the leader only turns 90°. One of my teachers
+# told me that those two features are probably symptoms of casino.
+# So, my enchufla and DQN stop and start in caida, and the leader turns 180° in my DQN.
 Enchufla = BuildFigura("enchufla")\
     .startsIn(PosicionAbierta)\
     .withLeader(Enchufla_Leader)\

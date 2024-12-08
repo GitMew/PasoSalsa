@@ -1,8 +1,10 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
-from .general import Visualiser, Figura, Panel, GridSpec, Pattern, Visualisable
+from math import cos, sin, radians, atan2, degrees
+
+from .general import Visualiser, Panel, GridSpec, Visualisable, WhichPerson
 from ...domain.instances.movement import InPlace
-from ...domain.abstracts.simulation import AbsoluteFootState, NamedFoot, Person, _StepVisitor
+from ...domain.abstracts.simulation import AbsoluteFootState, NamedFoot, _StepVisitor
 from ...domain.abstracts.movement import *
 
 
@@ -10,6 +12,11 @@ class TikzVisualiser(Visualiser):
     """
     Prints the positions of the steps as TikZ code.
     """
+
+    def __init__(self, which: WhichPerson, panels_per_row: int=3, loop_count_after: Optional[int]=None, show_count_0: bool=False,
+                 do_colour: bool=True, rotate_everything_by: int=0):
+        super().__init__(which=which, panels_per_row=panels_per_row, loop_count_after=loop_count_after, show_count_0=show_count_0, rotate_everything_by=rotate_everything_by)
+        self._do_colour = do_colour
 
     def _render(self, pattern_or_figura: Visualisable) -> List[Panel]:
         gridspec, previous_feet, feet_and_steps = self._getRenderDetails(pattern_or_figura)
@@ -36,16 +43,52 @@ class TikzVisualiser(Visualiser):
 
             # Step 2: Visualise feet.
             for foot, position in states.items():
-                panel_string += r"    \node[rotate=" + str(position.rotation-90) + "] at " + self._positionToMatrixCoordinate(position, gridspec) + " {" + self._footToString(foot) + "};\n"
+                panel_string += r"    \node" + f"[salsa-foot{self._footToNodeStyle(foot)},rotate={position.rotation-90}] at " + self._positionToMatrixCoordinate(position, gridspec) + " {" + self._footToString(foot) + "};\n"
 
-            # # Step 3: Visualise history.
+            # Step 3: Visualise history.
             for foot, step in steps.items():
+                style = self._footToArrowStyle(foot)
+
                 start = previous_feet[foot]
                 end   = states[foot]
+                start_still_occupied = any(current.isSamePlace(start) for current in states.values())
                 if not start.isSamePlace(end):
-                    panel_string += r"    \draw[salsa-arrow] " + self._positionToMatrixCoordinate(start, gridspec, anchor_center=True) + " to " + self._positionToMatrixCoordinate(end, gridspec) + ";\n"
+                    if isinstance(step, Move):  # TODO: It's quite difficult to know the trajectory of a foot given just its start and end pose. Possibly needs user disambiguation.
+                        panel_string += r"    \draw[salsa-arrow" + style + "] " + self._positionToMatrixCoordinate(start, gridspec, anchor_center=not start_still_occupied) + " to " + self._positionToMatrixCoordinate(end, gridspec) + ";\n"
+                    else:  # We assume that feet are always tangent to the arc of their movement. This means that when a foot moves and rotates, we can deduce which side of the movement line the foot's arc was based on whether it rotated clockwise (left of the line, higher degrees) or counterclockwise (right of the line, lower degrees).
+                        if isinstance(step, MoveThenTurn):
+                            manhattan_distance = abs(step.move.forward) + abs(step.move.rightward)
+                            foot_rotation_sign = (-1)**(step.turn.degrees < 0)
+                        elif isinstance(step, TurnThenMove):
+                            manhattan_distance = abs(step.move.forward) + abs(step.move.rightward)
+                            foot_rotation_sign = (-1)**(step.turn.degrees < 0)
+                        else:
+                            raise NotImplementedError
+
+                        # Get movement line
+                        delta_x = end.x - start.x
+                        delta_y = end.y - start.y
+                        movement_angle = degrees(atan2(delta_y, delta_x))
+                        movement_angle = movement_angle if movement_angle >= 0 else movement_angle + 360
+
+                        bending_angle = movement_angle - foot_rotation_sign*90
+                        if abs(step.turn.degrees) > 180 or (abs(step.turn.degrees) > 135 and manhattan_distance <= 4):  # For highly rotating turns OR for quite rotating turns that are very tight, have an entry/exit away from the movement line.
+                            out_angle = bending_angle
+                            in_angle  = bending_angle + foot_rotation_sign*45
+                            looseness = 2
+                        else:  # For smaller turns, have the arc be 45° off the movement line.
+                            out_angle = bending_angle + foot_rotation_sign*45
+                            in_angle  = bending_angle - foot_rotation_sign*45
+                            looseness = 1
+
+                        panel_string += r"    \draw[salsa-arrow" + style + "] " + self._positionToMatrixCoordinate(start, gridspec, anchor_center=not start_still_occupied) + f" to[out={round(out_angle,3)},in={round(in_angle,3)},looseness={looseness}] " + self._positionToMatrixCoordinate(end, gridspec) + ";\n"
                 elif step == InPlace:
-                    panel_string += r"    \node[salsa-encircle] at " + self._positionToMatrixCoordinate(start, gridspec) + r"{\filler};" + "\n"
+                    panel_string += r"    \node[salsa-encircle" + style + "] at " + self._positionToMatrixCoordinate(start, gridspec) + r" {\filler};" + "\n"
+                elif start.rotation != end.rotation:
+                    assert isinstance(step, Turn)
+                    start_angle = start.rotation
+                    end_angle   = start_angle + step.degrees
+                    panel_string += r"    \draw[salsa-arrow" + style + "] ($" + self._positionToMatrixCoordinate(start, gridspec) + "+" + f"({round(cos(radians(start_angle)),3)}em,{round(sin(radians(start_angle)),3)}em)" + f"$) arc[start angle={start_angle},end angle={end_angle},radius=1em];\n"
 
             panel_string += r"\end{tikzpicture}"
             panels.append(Panel(rendered=panel_string, count=count))
@@ -71,7 +114,6 @@ class TikzVisualiser(Visualiser):
         return f"(m-{gridspec.height-1-position.y+2}-{position.x+2}" + ".center"*anchor_center + ")"
 
     def _footToString(self, foot: NamedFoot) -> str:
-        # TODO: You likely want to style these, because otherwise it gets confusing who is who.
         if foot == NamedFoot.LeaderLeft:
             return "L"
         elif foot == NamedFoot.LeaderRight:
@@ -83,10 +125,34 @@ class TikzVisualiser(Visualiser):
         else:
             raise NotImplementedError
 
+    def _footToNodeStyle(self, foot: NamedFoot) -> str:
+        if self._do_colour:
+            if foot in {NamedFoot.LeaderLeft, NamedFoot.LeaderRight}:
+                return ",salsa-foot-leader"
+            elif foot in {NamedFoot.FollowerLeft, NamedFoot.FollowerRight}:
+                return ",salsa-foot-follower"
+            else:
+                raise NotImplementedError
+        else:
+            return ""
+
+    def _footToArrowStyle(self, foot: NamedFoot) -> str:
+        if self._do_colour:
+            if foot in {NamedFoot.LeaderLeft, NamedFoot.LeaderRight}:
+                return ",salsa-arrow-leader"
+            elif foot in {NamedFoot.FollowerLeft, NamedFoot.FollowerRight}:
+                return ",salsa-arrow-follower"
+            else:
+                raise NotImplementedError
+        else:
+            return ""
+
     def preamble(self) -> str:
         return r"""
 \usepackage{longtable}        
 \setlength{\tabcolsep}{-0.75em}
+
+\usepackage[dvipsnames]{xcolor}
 
 \usepackage{tikz}
 \usetikzlibrary{calc}
@@ -101,11 +167,18 @@ class TikzVisualiser(Visualiser):
     column sep=1.5em,
     row sep=1.5em,
 ]
-\tikzstyle{salsa-gridline}=[black!30]
+\tikzstyle{salsa-gridline}=[black!35]
 \tikzstyle{salsa-encircle}=[draw, circle, inner sep=1pt]
-\tikzstyle{salsa-arrow}=[-latex, black]
+\tikzstyle{salsa-arrow}=[-latex, black, line width=0.75pt]
+\tikzstyle{salsa-foot}=[]
 
 \newcommand{\filler}{\phantom{M}}
+
+% Person-specific styling
+\tikzstyle{salsa-foot-leader}=[RoyalBlue]
+\tikzstyle{salsa-arrow-leader}=[RoyalBlue]
+\tikzstyle{salsa-foot-follower}=[BrickRed]
+\tikzstyle{salsa-arrow-follower}=[BrickRed]
         """
 
 

@@ -101,7 +101,7 @@ class SimulatedPosition(_StepVisitor):
         #        angle, you should land ~1.414 away in the centre of the tile diagonal to your position. Right now, you
         #        land 1 away on the diagonal, which is only 1/sqrt(2) == 0.707 in each direction, which int()s to 0 again.
         #        Of course, this is only defined for a handful of angles depending on the step size. Could allow the user
-        #        to not "snap to grid" although it will be a pain to visualise. (Also, ASCII can't visualise rotations.)
+        #        to "not snap to grid" although it will be a pain to visualise.
         self.position = AbsoluteFootState(x=round(self.position.x + delta_x), y=round(self.position.y + delta_y), rotation=self.position.rotation)
 
     def visit_Turn(self, step: Turn):
