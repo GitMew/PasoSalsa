@@ -1,4 +1,4 @@
-from pasosalsa.domain.instances.figuras import *
+from pasosalsa.domain.instances.salsa.figuras import *
 from pasosalsa.domain.abstracts.sequence import areCompatible
 
 print(areCompatible(Guapea, Enchufla))

@@ -1,6 +1,6 @@
-from ..abstracts.figuras import *
-from ..abstracts.composition import *
-from .salsa.posiciones import *
+from ...abstracts.figuras import *
+from ...abstracts.composition import *
+from .posiciones import *
 
 __all__ = ["Guapea", "VueltaDerecha", "VueltaDerechaCerranda", "VueltaDoble",
            "DiLeQueNo", "Enchufla", "HalfEnchufla", "EnchuflaDoble", "Exhibela", "Sacala",

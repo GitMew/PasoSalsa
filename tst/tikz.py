@@ -1,5 +1,4 @@
-from pasosalsa.domain.instances.figuras import *
-from pasosalsa.domain.instances.figuras import Cruzado_Left_Start, Loopable, Sacachufla
+from pasosalsa.domain.instances.salsa.figuras import *
 from pasosalsa.application.visualisers.general import WhichPerson
 from pasosalsa.application.visualisers.tikz import TikzVisualiser
 
