@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pasosalsa"
-version = "2024.12.02"
+version = "2025.01.01"
 description = "PasoSalsa: Create diagrams for salsa figures (steps and motions)."
 keywords = ["dance", "dancing", "salsa"]
 

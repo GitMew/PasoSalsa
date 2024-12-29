@@ -3,9 +3,10 @@ from ...abstracts.composition import *
 from .posiciones import *
 
 __all__ = ["Guapea", "VueltaDerecha", "VueltaDerechaCerranda", "VueltaDoble",
-           "DiLeQueNo", "Enchufla", "HalfEnchufla", "EnchuflaDoble", "Exhibela", "Sacala",
-           "PalMedio", "CubanBasicStep", "PasealaEnFrente", "Aguajea",
-           "Setenta", "EnchuflaSequence", "EnchuflaDobleSequence", "ExhibelaSequence", "SacalaSequence"]
+           "DiLeQueNo", "Enchufla", "HalfEnchufla", "EnchuflaDoble", "Exhibela", "Sacala", "DiLeQueNo_Cerranda",
+           "PalMedio", "CubanBasicStep", "PasealaEnFrente", "Aguajea", "PasoSon",
+           "CubanitaStart", "Cubanita", "CubanitaEnd",
+           "BeginnersSetenta", "EnchuflaSequence", "EnchuflaDobleSequence", "ExhibelaSequence", "SacalaSequence", "CubanitaSequence"]
 
 
 Guapea_Leader = BuildPattern(
@@ -108,7 +109,7 @@ VueltaDerechaCerranda_Leader = UntilCount(4, LikeLeaderIn(VueltaDerecha)).move(
     Forward
 ).count().move(
     RightFoot,
-    InPlace  # FIXME: Hmmm I don't think this is right, but I need to check what I do myself.
+    Forward
 ).count().pause().finish()
 
 
@@ -181,7 +182,7 @@ DiLeQueNo = BuildFigura("di-le que no")\
         ).move(
             RightFoot,
             MoveThenTurn(
-                Forward2 + Forward + Leftward,
+                Forward3 + Leftward,
                 CounterClockwise90
             )
         ).count().pause().move(  # After this, the follower has to move forward 3 units and rotate 180°.
@@ -193,7 +194,7 @@ DiLeQueNo = BuildFigura("di-le que no")\
         ).count().move(
             RightFoot,
             MoveThenTurn(
-                Forward2 + Forward + Leftward,  # In practice, followers only move Forward2 since they don't mind ending in FeetDiagonalRightForward (it has the same freedoms as FeetTogether when ending on a left foot movement).
+                Forward3 + Leftward,  # In practice, followers only move Forward2 since they don't mind ending in FeetDiagonalRightForward (it has the same freedoms as FeetTogether when ending on a left foot movement).
                 CounterClockwise180
             )
         ).count().move(
@@ -201,6 +202,37 @@ DiLeQueNo = BuildFigura("di-le que no")\
             TurnThenMove(
                 CounterClockwise90,
                 Backward2 + Leftward  # It's again more like 1.5 units, so that the movement of the left foot, which always goes to baseline, is 1.5 + 1.5 instead of 2 + 1.
+            )
+        ).count().pause().finish()
+    )
+
+
+
+DiLeQueNo_Cerranda = BuildFigura("di-le que no cerranda")\
+    .startsIn(PosicionCaida)\
+    .withLeader(
+        UntilCount(6, LikeLeaderIn(DiLeQueNo)) \
+        .move(
+            RightFoot,
+            MoveThenTurn(
+                Forward2 + Leftward,
+                CounterClockwise90
+            )
+        ).count().pause().finish()
+    )\
+    .withFollower(
+        UntilCount(5, LikeFollowerIn(DiLeQueNo))\
+        .move(
+            RightFoot,
+            MoveThenTurn(
+                Forward2 + Leftward,
+                CounterClockwise180
+            )
+        ).count().move(
+            LeftFoot,
+            MoveThenTurn(
+                Backward + Rightward,
+                CounterClockwise90
             )
         ).count().pause().finish()
     )
@@ -226,7 +258,7 @@ Cruzado_Left_Start = BuildPattern(
     Backward
 ).count().move(
     RightFoot,
-    Leftward + Leftward
+    Leftward2
 ).count().pause().finish()
 
 Cruzado_Left_Start.setName("cruzado")
@@ -242,16 +274,16 @@ WideCruzado_Left_Start = BuildPattern(
     Backward
 ).count().move(
     LeftFoot,
-    Rightward + Rightward + Rightward
+    Rightward3
 ).count().pause().move(
     RightFoot,
-    Forward + Rightward + Rightward + Rightward
+    Forward + Rightward3
 ).count().move(
     LeftFoot,
     Backward
 ).count().move(
     RightFoot,
-    Leftward + Leftward + Leftward
+    Leftward3
 ).count().pause().finish()
 
 WideCruzado_Left_Start.setName("wide cruzado")
@@ -295,6 +327,19 @@ Cruzado_Left_End = BuildPattern(
 Cruzado_Left_End.setName("cruzado ending with feet together")
 
 
+# Alternatively, it is done with FeetApart. Bit of a strange step anyway.
+Mambo_Leader = BuildPattern(FeetTogether)\
+    .move( LeftFoot, InPlace).count()  \
+    .move( LeftFoot, InPlace).count()  \
+    .move(RightFoot, InPlace).count() \
+    .move(RightFoot, InPlace).count() \
+    .move( LeftFoot, InPlace).count()  \
+    .move( LeftFoot, InPlace).count()  \
+    .move(RightFoot, InPlace).count() \
+    .move(RightFoot, InPlace).count().finish()
+
+Mambo_Leader.setName("mambo")
+
 
 Enchufla_Leader = BuildPattern(
     FeetTogether
@@ -307,7 +352,7 @@ Enchufla_Leader = BuildPattern(
 ).count().move(
     LeftFoot,
     MoveThenTurn(
-        Leftward + Forward2 + Forward2,  # 4 units is the most you can step. You start legs spread and you end legs spread.
+        Leftward + Forward4,
         Clockwise180
     )
 ).move(
@@ -315,7 +360,7 @@ Enchufla_Leader = BuildPattern(
     Clockwise180
 ).count().pause().move(
     RightFoot,
-    Rightward + Backward2 + Backward
+    Rightward + Backward3
 ).count().move(
     LeftFoot,
     InPlace
@@ -325,7 +370,7 @@ Enchufla_Leader = BuildPattern(
 ).move(
     RightFoot,
     MoveThenTurn(
-        Forward + Forward + Leftward,
+        Forward2 + Leftward,
         CounterClockwise90
     )
 ).count().pause().finish()
@@ -346,7 +391,7 @@ Enchufla_Follower = BuildPattern(
 ).move(
     RightFoot,
     MoveThenTurn(
-        Leftward2 + Forward2 + Forward,
+        Leftward2 + Forward3,
         CounterClockwise180
     )
 ).count().pause().move(
@@ -532,12 +577,26 @@ PalMedio_Leader = BuildPattern(FeetApartRight).move(
 ).count().pause().finish()
 
 
-PalMedio = BuildFigura("Pal medio")\
+PalMedio = BuildFigura("pal medio")\
     .startsIn(PosicionCerrada)\
     .withLeader(PalMedio_Leader)\
     .withFollower(Mirror(PalMedio_Leader))
 
 BalancingStep = PalMedio
+
+
+PasoSon_Leader = BuildPattern(FeetTogether)\
+    .move( LeftFoot, InPlace).count()\
+    .move(RightFoot, InPlace).count()\
+    .move( LeftFoot, Leftward).count().pause()\
+    .move(RightFoot, Leftward).count()\
+    .move( LeftFoot, InPlace).count()\
+    .move(RightFoot, Rightward).count().pause().finish()
+
+PasoSon = BuildFigura("paso son")\
+    .startsIn(PosicionCerrada)\
+    .withLeader(PasoSon_Leader)\
+    .withFollower(Mirror(PasoSon_Leader))
 
 
 CubanBasicStep = BuildFigura("Cuban basic step")\
@@ -546,6 +605,8 @@ CubanBasicStep = BuildFigura("Cuban basic step")\
     .withFollower(Mirror(LeaderCubanBasicStep))
 
 CumbiaBasic = CubanBasicStep  # "Cuban basic step" is used at our school, Cumbia basic is used e.g. here: https://salsayo.com/move/Back-Rocks and also https://thedancedojo.com/how-to-salsa-dance-for-beginners/back-and-cumbia-salsa-basic-steps
+PasoBasico  = CubanBasicStep  # Salsaficion calls it "paso basico" if I'm not mistaken.
+
 
 
 # The following step is like Guapea, except
@@ -557,7 +618,7 @@ CumbiaBasic = CubanBasicStep  # "Cuban basic step" is used at our school, Cumbia
 #   - Our Flemish teacher calls it "basic step".
 #   - Salsayo calls it "mambo": https://salsayo.com/move/Basic-Steps and https://salsayo.com/move/Closed-Position-Basic-Steps
 #   - Dance Papi calls it "son montuno": https://www.youtube.com/watch?v=Qv5BKoV72nA
-MamboBasicStep_Leader_Start = BuildPattern(
+SonMontuno_Leader_Start = BuildPattern(
     FeetTogether
 ).move(
     LeftFoot,
@@ -579,10 +640,9 @@ MamboBasicStep_Leader_Start = BuildPattern(
     Forward2
 ).count().pause().finish()
 
-SonMontuno_Leader_Start = MamboBasicStep_Leader_Start
 
 
-WalkingVueltaDerecha_Follower_Start = BuildPattern(  # Is to vuelta derecha what Mambo is to Guapea.
+WalkingVueltaDerecha_Follower_Start = BuildPattern(  # Is to vuelta derecha what Son Montuno is to Guapea.
     FeetTogether
 ).move(
     RightFoot,
@@ -612,6 +672,7 @@ WalkingVueltaDerecha_Follower_Start = BuildPattern(  # Is to vuelta derecha what
         Leftward + Backward2
     )
 ).count().pause().finish()
+
 
 
 WalkingVueltaDerecha_Follower_End = BuildPattern(  # Is to vuelta derecha what Mambo is to Guapea.
@@ -649,7 +710,8 @@ WalkingVueltaDerecha_Follower_End = BuildPattern(  # Is to vuelta derecha what M
 ).count().pause().finish()
 
 
-# Also called "para abajo / pa'bajo" and also "adentro y afuera".
+
+# Also called "para abajo / pa'bajo" / "abajo" and also "adentro y afuera".
 #   - The example video at https://salsayo.com/move/Para-Abajo shows the leader doing a lateral step (which also has
 #     a hundred different names, e.g. "timba" according to my Cuban teacher) rather than a cruzado.
 #   - Dance Papi uses "lleva-la pa'bajo", but note that their version looks more like aguajea below; in particular, the
@@ -661,7 +723,8 @@ PasealaEnFrente = BuildFigura("pasea-la en frente")\
     .withFollower(LikeFollowerIn(CubanBasicStep))
 
 
-# Aguaje is a more dramatic version of paseala en frente where the follower does more than a Cuban basic step;
+
+# Aguajea is a more dramatic version of paseala en frente where the follower does more than a Cuban basic step;
 # she's really turning 180° every bar, moving from left-caida on 3 to right-caida on 7, which allows it to be chained with exhibela and dqn.
 # Etymology: "el aguaje" means "the tide" or "the wave", so "aguajea" is perhaps a neologism that means "to go back and forth like the waves of the sea".
 Aguajea_Follower = BuildPattern(FeetTogether).move(
@@ -702,6 +765,7 @@ Aguajea = BuildFigura("aguajea")\
     .startsIn(PosicionCaida)\
     .withLeader(Cruzado_Left_Start)\
     .withFollower(Aguajea_Follower)
+
 
 
 Exhibela = BuildFigura("exhibela")\
@@ -756,6 +820,7 @@ Sacala = BuildFigura("sacala")\
     .withFollower(LikeFollowerIn(Exhibela))
 
 
+
 Sacachufla_Leader = UntilCount(
     5, LikeLeaderIn(Enchufla)
 ).move(
@@ -780,6 +845,139 @@ Sacachufla = BuildFigura("enchufla for sacala")\
     .withFollower(LikeFollowerIn(Enchufla))
 
 
+
+CubanitaStart = BuildFigura("Cubanita setup")\
+    .startsIn(PosicionAbierta)\
+    .withLeader(
+        PatternSequence(
+            UntilCount(2, LikeLeaderIn(Enchufla)) \
+            .move(
+                LeftFoot,
+                MoveThenTurn(
+                    Forward3 + Leftward,
+                    Clockwise90
+                )
+            ).move(
+                RightFoot,
+                Clockwise90
+            ).count().pause().finish(),
+            FromCount(5, LikeLeaderIn(PasoBasico)).finish()
+        )
+    )\
+    .withFollower(
+        PatternSequence(
+            UntilCount(2, LikeFollowerIn(Enchufla))\
+            .move(
+                RightFoot,
+                MoveThenTurn(
+                    Forward3 + Leftward,
+                    CounterClockwise90
+                )
+            ).move(
+                LeftFoot,
+                CounterClockwise90
+            ).count().pause().finish(),
+            FromCount(5, LikeFollowerIn(PasoBasico)).finish()
+        )
+    )
+
+Cubanita = BuildFigura("Cubanita")\
+    .startsIn(PosicionCubanita)\
+    .withLeader(LikeLeaderIn(PasoBasico))\
+    .withFollower(LikeFollowerIn(PasoBasico))
+
+
+
+CubanitaEnd = BuildFigura("Cubanita exit")\
+    .startsIn(PosicionCubanita)\
+    .withLeader(
+        PatternSequence(
+            BuildPattern(FeetTogether).move(
+                LeftFoot,
+                MoveThenTurn(
+                    Backward + Rightward2,
+                    CounterClockwise90
+                )
+            ).move(
+                RightFoot,
+                CounterClockwise90
+            ).count().move(
+                RightFoot,
+                InPlace
+            ).count().move(
+                LeftFoot,
+                MoveThenTurn(
+                    Forward3 + Rightward,
+                    Clockwise180
+                )
+            ).move(
+                RightFoot,
+                Clockwise180
+            ).count().pause().finish(),
+            FromCount(5, LikeLeaderIn(Enchufla)).finish()
+        )
+    )\
+    .withFollower(
+        PatternSequence(
+            BuildPattern(FeetTogether).move(
+                RightFoot,
+                MoveThenTurn(
+                    Backward + Leftward2,
+                    Clockwise90
+                )
+            ).move(
+                LeftFoot,
+                Clockwise90
+            ).count().move(
+                LeftFoot,
+                InPlace
+            ).count().move(
+                RightFoot,
+                MoveThenTurn(
+                    Forward2 + Leftward2,
+                    CounterClockwise180
+                )
+            ).move(
+                LeftFoot,
+                CounterClockwise180
+            ).count().pause().finish(),
+            FromCount(5, LikeFollowerIn(Enchufla)).finish()
+        )
+    )
+
+# CubanitoStart = BuildFigura("Cubanito setup")\
+#     .startsIn(PosicionCubanita)\
+#     .withLeader()\
+#     .withFollower()
+
+Cubanito = BuildFigura("Cubanito")\
+    .startsIn(PosicionCubanito)\
+    .withLeader(LikeLeaderIn(Cubanita))\
+    .withFollower(LikeFollowerIn(Cubanita))
+
+# CubanitoEnd = BuildFigura("Cubanito end")\
+#     .startsIn(PosicionCubanito)\
+#     .withLeader(
+#         UntilCount(4, LikeLeaderIn(Cubanito))\
+#         .move()
+#     )\
+#     .withFollower(
+#         UntilCount(4, LikeFollowerIn(Cubanito)) \
+#         .move()
+#     )
+
+# Leader is like CubanitaEnd in the first 2 counts, but ends facing forward, not rightward.
+# CubanitaToCubanito = BuildFigura("Cubanita to Cubanito")\
+#     .startsIn(PosicionCubanita)\
+#     .withLeader()\
+#     .withFollower(
+#         PatternSequence(
+#             UntilCount(4, LikeFollowerIn(CubanitaEnd)).finish(),
+#             ...
+#         )
+#     )
+
+
 # Some popular figure sequences
 
 EnchuflaSequence = FiguraSequence(
@@ -798,7 +996,22 @@ SacalaSequence = FiguraSequence(
   "sacala sequence",
   Sacachufla, Sacala, DiLeQueNo
 )
-Setenta = FiguraSequence(
-    "setenta",
+BeginnersSetenta = FiguraSequence(
+    "beginners setenta",
     VueltaDerecha, Enchufla, DiLeQueNo
 )
+CubanitaSequence = FiguraSequence(
+    "Cubanita sequence",
+    CubanitaStart, Cubanita, CubanitaEnd, DiLeQueNo
+)
+# CubanitoSequence = FiguraSequence(
+#     "Cubanito sequence",
+#     CubanitoStart, Cubanito, CubanitoEnd, DiLeQueNo
+# )
+# CubanitaYCubanitoSequence = FiguraSequence(
+#     "Cubanita y Cubanito sequence",
+#     CubanitaStart, Cubanita, CubanitaToCubanito, Cubanito, CubanitoEnd, CubanitaEnd, DiLeQueNo  # TODO: Not sure if that CubanitaEnd makes sense there
+# )
+Uno = CubanitaSequence.copy(name="uno")  # ...although with a double-handed enchufla+crown.
+# Dos = CubanitoSequenceWithSombrero
+# Doce = FiguraSequence("doce", PartialUno, CubanitaToCubanito, Dos)  # TODO: If we didn't include DQN in Cubanita, we could reuse even more.

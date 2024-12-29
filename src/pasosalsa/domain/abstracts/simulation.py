@@ -34,13 +34,16 @@ class AbsoluteFootState:
         return cos(radians(self.rotation-90)), sin(radians(self.rotation-90))
 
     def __sub__(self, other: "AbsoluteFootState") -> MoveThenTurn:
-        # Get movement vector
+        """
+        Get the move to get from the given state (other == start) to this state (self == end).
+        """
+        # Get absolute movement vector
         delta_x = self.x - other.x
         delta_y = self.y - other.y
 
-        # Project it onto the relative axes
-        forward_x, forward_y = self.getForwardUnitVector()
-        right_x, right_y     = self.getRightwardUnitVector()
+        # Project it onto the relative axes of the starting position
+        forward_x, forward_y = other.getForwardUnitVector()
+        right_x, right_y     = other.getRightwardUnitVector()
 
         forward_delta = delta_x*forward_x + delta_y*forward_y
         right_delta   = delta_x*right_x   + delta_y*right_y

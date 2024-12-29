@@ -23,6 +23,14 @@ class Figura:
     def duration(self):
         return self.leader.duration()
 
+    def copy(self, name: str=None) -> "Figura":
+        return Figura(
+            name=name or self.name,
+            posicion_at_start=self.starting_posicion.copy(),
+            leader=self.leader.copy(),
+            follower=self.follower.copy()
+        )
+
 
 class BuildFigura:
 

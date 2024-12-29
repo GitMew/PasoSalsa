@@ -4,7 +4,7 @@ from .patterns import Count, Pattern, StartingPose, _Foot, BuildPattern, LeftFoo
 from .figuras import Figura
 from .simulation import areCompatibleFiguras, areCompatiblePatterns, Body, AbsoluteFootState, last
 from .movement import MoveThenTurn, Move, Turn, _RelativeStep
-from ...util.iterables import first
+from ...util.iterables import first, at
 
 
 class PatternSequence(Pattern):
@@ -107,7 +107,7 @@ def WithReplacedStartByEnd(pattern: Pattern) -> Pattern:
     (left_end, right_end), _ = last(body.executePattern(pattern))
 
     new_pattern = pattern.copy()
-    new_pattern.start = Count(left=left_end - left_start, right=right_end - right_start)
+    new_pattern.start = StartingPose(left=left_end - left_start, right=right_end - right_start)
     return new_pattern
 
 
@@ -140,7 +140,7 @@ def UntilCount(count: int, pattern: Pattern) -> BuildPattern:
     """
     Truncates a pattern to the given count, and returns a builder that starts after that count for building a new pattern.
     """
-    assert count <= len(pattern.counts)
+    assert count <= pattern.duration()
 
     builder = BuildPattern(pattern.start)
     for count in pattern.counts[:count]:  # E.g. if count == 1, only the first count will be identical.
@@ -153,5 +153,39 @@ def UntilCount(count: int, pattern: Pattern) -> BuildPattern:
     return builder
 
 
-def WithFirstBar(pattern: Pattern) -> BuildPattern:
+def FromCount(count: int, pattern: Pattern) -> BuildPattern:
+    """
+    Same as UntilCount except you truncate from the start.
+    """
+    assert 1 <= count <= pattern.duration()
+
+    if count == 1:
+        # Do not simulate anything. Just steal the starting pose.
+        start = pattern.start
+    else:
+        # Simulate until (but not including) the count, which will be at least 1 step.
+        left_start, right_start = AbsoluteFootState(0, 0, 90), AbsoluteFootState(1, 0, 90)  # Not the starting pose of the pattern, but rather what pattern.start is relative to.
+        body = Body(left_start, right_start)
+        (left_end, right_end), _ = at(count-2, body.executePattern(pattern))  # at() takes an index. count-1 is an index, and we want to evaluate to the pose before that, so count-2.
+        start = StartingPose(left=left_end - left_start, right=right_end - right_start)
+
+    # Copy the rest of the steps into a new builder:
+    builder = BuildPattern(start)
+    for count in pattern.counts[count-1:]:  # E.g.: if count == 5, you drop indices 0, 1, 2, 3.
+        builder = builder \
+            .move(LeftFoot, count.left) \
+            .move(RightFoot, count.right) \
+            .count()
+    return builder
+
+
+# TODO: To get exactly the first bar or exactly the second bar, you need a transform FromCountUntilCount
+#       which probably generalises both of the above such that FromCount(x) == FromCountUntilCount(x, None) and
+#       UntilCount(y) == FromCountUntilCount(None, y).
+
+def UntilFirstBar(pattern: Pattern) -> BuildPattern:
     return UntilCount(4, pattern)
+
+
+def FromSecondBar(pattern: Pattern) -> BuildPattern:
+    return FromCount(5, pattern)

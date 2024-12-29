@@ -60,6 +60,24 @@ PosicionAbajo = Posicion(
 )
 
 
+# The position you find yourself in during a Cubanita:
+#     ^   ^
+#     FL  FR
+#     ^   ^
+#     LL  LR
+PosicionCubanita = Posicion(
+    left= Forward2,
+    right=Forward2
+)
+
+
+# Same as Cubanita but with the roles reversed.
+PosicionCubanito = Posicion(
+    left= Backward2,
+    right=Backward2
+)
+
+
 # Starting poses
 FeetTogether = StartingPose(InPlace,InPlace)
 LegsCrossedRightOverLeft = StartingPose(left=Backward + Rightward2, right=InPlace)
